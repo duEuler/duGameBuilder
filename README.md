@@ -1,9 +1,17 @@
-﻿# 🎮 Game Builder Pro
+# 🎮 Game Builder Pro
 
-Construtor de jogos 2D mobile com 12 templates prontos para criar seus próprios jogos!
+Construtor de jogos 2D mobile com 12 templates prontos para jogar!
 
-![Game Builder](https://img.shields.io/badge/React-18.2.0-blue)
+![Game Builder](https://img.shields.io/badge/Games-12%20Templates-blue)
+![React](https://img.shields.io/badge/React-18.2-61dafb)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6)
 ![License](https://img.shields.io/badge/license-MIT-green)
+
+## 🌐 Acesso Online
+
+**🚀 [Jogar Agora](https://dueuler.github.io/duGameBuilder/)** ← Clique aqui!
+
+> **Nota**: Após fazer merge desta branch para `main`, o site será publicado automaticamente via GitHub Actions.
 
 ## 🚀 Templates Disponíveis
 
@@ -65,24 +73,30 @@ npm run deploy
 
 ## 🛠️ Tecnologias
 
-- **React 18** - Framework principal
-- **Canvas API** - Renderização 2D
-- **Lucide React** - Ícones
-- **Refs** - Otimização de performance
+- **React 18.2** - Framework UI
+- **TypeScript 5** - Type safety
+- **Canvas API** - Renderização de jogos 2D
+- **Lucide React** - Ícones modernos
+- **Tailwind CSS** - Estilização (inline)
+- **GitHub Actions** - Deploy automático
 
 ## 📁 Estrutura do Projeto
 
-\\\
+```
 duGameBuilder/
 ├── public/
 │   └── index.html
 ├── src/
-│   ├── App.jsx         # Componente principal
-│   ├── index.js        # Entry point
+│   ├── App.tsx         # Componente principal com game engine
+│   ├── index.tsx       # Entry point
 │   └── index.css       # Estilos globais
+├── .github/
+│   └── workflows/
+│       └── deploy.yml  # Deploy automático
 ├── package.json
+├── tsconfig.json
 └── README.md
-\\\
+```
 
 ## 🎨 Como Criar um Jogo
 
