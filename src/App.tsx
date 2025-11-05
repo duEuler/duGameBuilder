@@ -1,27 +1,105 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Plus, Trash2, Copy, Square, Circle, Triangle, User, Target } from 'lucide-react';
+import { Play, Pause, Plus, Trash2, Copy, Square, Circle, Triangle, User, Target, LucideIcon } from 'lucide-react';
+
+interface GameObject {
+  id?: number;
+  type: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  velocityX?: number;
+  velocityY?: number;
+  controllable?: boolean;
+  physics?: boolean;
+  solid?: boolean;
+  deadly?: boolean;
+  collectible?: boolean;
+  breakable?: boolean;
+  broken?: boolean;
+  points?: number;
+  ai?: string;
+  patrolStart?: number;
+  patrolDistance?: number;
+  speed?: number;
+  jumpPower?: number;
+  collected?: boolean;
+  launched?: boolean;
+  moving?: boolean;
+  targetX?: number;
+  targetY?: number;
+  direction?: string;
+  bounce?: number;
+  health?: number;
+  isRoad?: boolean;
+  gemType?: string;
+  label?: string;
+}
+
+interface GameTemplate {
+  id: string;
+  name: string;
+  description: string;
+  config: {
+    gravity: number;
+    canvasWidth: number;
+    canvasHeight: number;
+    controlScheme: string;
+    scrollSpeed?: number;
+    gridSize?: number;
+  };
+  initialObjects: GameObject[];
+}
+
+interface ObjectTemplate {
+  type: string;
+  icon: LucideIcon;
+  color: string;
+  physics?: boolean;
+  controllable?: boolean;
+  solid?: boolean;
+  deadly?: boolean;
+  collectible?: boolean;
+  breakable?: boolean;
+  ai?: string;
+  points?: number;
+  bounce?: number;
+  gemType?: string;
+  label: string;
+}
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  color: string;
+}
 
 const GameBuilder = () => {
-  const [screen, setScreen] = useState('templates');
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [objects, setObjects] = useState([]);
-  const [selectedObject, setSelectedObject] = useState(null);
+  const [screen, setScreen] = useState<'templates' | 'editor'>('templates');
+  const [selectedTemplate, setSelectedTemplate] = useState<GameTemplate | null>(null);
+  const [objects, setObjects] = useState<GameObject[]>([]);
+  const [selectedObject, setSelectedObject] = useState<GameObject | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showObjectMenu, setShowObjectMenu] = useState(false);
   const [showProperties, setShowProperties] = useState(false);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
-  
-  const canvasRef = useRef(null);
-  const animationRef = useRef(null);
-  const gameObjectsRef = useRef([]);
-  const particlesRef = useRef([]);
-  const keysRef = useRef({});
-  const touchControlsRef = useRef({ left: false, right: false, jump: false, up: false, down: false });
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number | null>(null);
+  const gameObjectsRef = useRef<GameObject[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
+  const keysRef = useRef<Record<string, boolean>>({});
+  const touchControlsRef = useRef<{ left: boolean; right: boolean; jump: boolean; up: boolean; down: boolean }>({ left: false, right: false, jump: false, up: false, down: false });
   const scoreRef = useRef(0);
   const livesRef = useRef(3);
 
-  const gameTemplates = [
+  const gameTemplates: GameTemplate[] = [
     {
       id: 'platformer',
       name: '🍄 Plataforma',
@@ -229,7 +307,7 @@ const GameBuilder = () => {
     }
   ];
 
-  const objectTemplates = {
+  const objectTemplates: Record<string, ObjectTemplate[]> = {
     platformer: [
       { type: 'player', icon: User, color: '#3b82f6', physics: true, controllable: true, label: 'Jogador' },
       { type: 'platform', icon: Square, color: '#10b981', physics: false, solid: true, label: 'Plataforma' },
@@ -290,7 +368,7 @@ const GameBuilder = () => {
     ]
   };
 
-  const startFromTemplate = (template) => {
+  const startFromTemplate = (template: GameTemplate) => {
     setSelectedTemplate(template);
     const initialObjects = template.initialObjects.map((obj, idx) => ({
       ...obj,
@@ -313,10 +391,10 @@ const GameBuilder = () => {
   };
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       keysRef.current[e.key] = true;
     };
-    const handleKeyUp = (e) => {
+    const handleKeyUp = (e: KeyboardEvent) => {
       keysRef.current[e.key] = false;
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -327,7 +405,7 @@ const GameBuilder = () => {
     };
   }, []);
 
-  const addObject = (template) => {
+  const addObject = (template: ObjectTemplate) => {
     const newObject = {
       id: Date.now(),
       ...template,
@@ -346,21 +424,21 @@ const GameBuilder = () => {
     setObjects(prev => [...prev, newObject]);
   };
 
-  const updateObject = (id, updates) => {
+  const updateObject = (id: number, updates: Partial<GameObject>) => {
     setObjects(objects.map(obj => obj.id === id ? { ...obj, ...updates } : obj));
   };
 
-  const deleteObject = (id) => {
+  const deleteObject = (id: number) => {
     setObjects(objects.filter(obj => obj.id !== id));
     if (selectedObject?.id === id) setSelectedObject(null);
   };
 
-  const duplicateObject = (obj) => {
+  const duplicateObject = (obj: GameObject) => {
     const newObj = { ...obj, id: Date.now(), x: obj.x + 50, y: obj.y + 50 };
     setObjects([...objects, newObj]);
   };
 
-  const createParticles = (x, y, color, count = 8) => {
+  const createParticles = (x: number, y: number, color: string, count = 8) => {
     for (let i = 0; i < count; i++) {
       particlesRef.current.push({
         id: Date.now() + Math.random(),
@@ -374,7 +452,7 @@ const GameBuilder = () => {
     }
   };
 
-  const checkCollision = (obj1, obj2) => {
+  const checkCollision = (obj1: GameObject, obj2: GameObject) => {
     return obj1.x < obj2.x + obj2.width &&
            obj1.x + obj1.width > obj2.x &&
            obj1.y < obj2.y + obj2.height &&
@@ -839,8 +917,8 @@ const GameBuilder = () => {
     draw();
   }, [objects, selectedObject, isPlaying, score, lives, selectedTemplate]);
 
-  const handleCanvasClick = (e) => {
-    if (isPlaying) return;
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isPlaying || !canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const scaleX = canvasRef.current.width / rect.width;
     const scaleY = canvasRef.current.height / rect.height;
@@ -860,12 +938,12 @@ const GameBuilder = () => {
     if (!isPlaying || !selectedTemplate) return null;
     const scheme = selectedTemplate.config.controlScheme;
 
-    const handleTouchStart = (key) => (e) => {
+    const handleTouchStart = (key: keyof typeof touchControlsRef.current) => (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault();
       touchControlsRef.current[key] = true;
     };
 
-    const handleTouchEnd = (key) => (e) => {
+    const handleTouchEnd = (key: keyof typeof touchControlsRef.current) => (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault();
       touchControlsRef.current[key] = false;
     };
@@ -1186,8 +1264,8 @@ const GameBuilder = () => {
     );
   }
 
-  const config = selectedTemplate?.config || {};
-  const availableObjects = objectTemplates[selectedTemplate?.id] || [];
+  const config = selectedTemplate?.config || { canvasWidth: 800, canvasHeight: 400, gravity: 0, controlScheme: 'platformer' };
+  const availableObjects = objectTemplates[selectedTemplate?.id || ''] || [];
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
